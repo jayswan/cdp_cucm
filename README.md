@@ -3,10 +3,11 @@ Phone-Based Interface Descriptions
 
 These scripts show an example of the following:
 
-    1. How to interact with the HTTPS interface on Cisco switches.
-    2. How to interact with the AXL/SOAP/XML API on Cisco Unified Communications Manager.
+1. How to interact with the HTTPS interface on Cisco switches.
+2. How to interact with the AXL/SOAP/XML API on Cisco Unified Communications Manager.
 
 The only external module required is [requests](http://docs.python-requests.org/en/latest/).
+
 cdp\_cucm.py
 
 This script queries a Cisco switch for its CDP neighbor table and extracts
@@ -17,11 +18,12 @@ via its XML SOAP API for the descriptions of those phones.
 
 Finally, it either:
 
-    a) interactively prints an interface configuration for the switch that 
-       uses the description field as an interface description (suitable for
-       copy and paste), or
-    b) configures the switch with those interface descriptions via the switch
-       HTTPS interface.
+a) interactively prints an interface configuration for the switch that 
+uses the description field as an interface description (suitable for
+copy and paste), or
+
+b) configures the switch with those interface descriptions via the switch
+HTTPS interface.
 
 Thus, if a phone's description in the CUCM database is "Alice's Phone", the
 new interface configuration would be:
