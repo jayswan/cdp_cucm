@@ -11,7 +11,9 @@ The only external module required is [requests](http://docs.python-requests.org/
 cdp\_cucm.py
 
 This script queries a Cisco switch for its CDP neighbor table and extracts
-the device names of the attached IP phones.
+the device names of the attached IP phones. Currently, the script will quit if it
+finds unregistered phones. If you want it to ignore unregistered phones, change the
+code so that it ignores regex match failures on the XML response.
 
 It then uses the companion module cucm\_query.py to query the CUCM database
 via its XML SOAP API for the descriptions of those phones.
