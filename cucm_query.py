@@ -1,4 +1,6 @@
 from getpass import getpass
+from lxml import etree
+from lxml.etree import tostring
 import requests
 import re
 import sys
@@ -17,34 +19,30 @@ A secondary use of the script is to interactively query CUCM via
 the SOAP XML API, and to provide an example of doing this via the Python
 requests module.
 """
-
-# define constant strings used in SOAP API
-env_start = '<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">'
-body_start = '<SOAP-ENV:Body>'
-
-body1 = 'axlapi:executeSQLQuery sequence="1"'
-body2 = 'xmlns:axlapi="http://www.cisco.com/AXL/API/7.0"'
-body3 = 'xmlns:axl="http://www.cisco.com/AXL/API/7.0"'
-body4 = 'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'
-body5 = 'xsi:schemaLocation="http://www.cisco.com/AXL/API/7.0 axlsoap.xsd"'
-body_end = '</SOAP-ENV:Body>'
-env_end = '</SOAP-ENV:Envelope>'
-body_axl_end = '</axlapi:executeSQLQuery>'
+soap_nsuri = 'http://schemas.xmlsoap.org/soap/envelope/'
+soap_ns = '{%s}' % soap_nsuri
+soap_axuri = 'http://www.cisco.com/AXL/API/8.5'
+soap_axns = '{%s}' % soap_axuri
+soap_nsmap = {'soapenv' : soap_nsuri}
+soap_sqlnsmap = {'ns' : soap_axuri}
+soap_env = etree.Element(soap_ns+'Envelope', nsmap=soap_nsmap)
+soap_h = etree.SubElement(soap_env, soap_ns+'Header')
+soap_b = etree.SubElement(soap_env, soap_ns+'Body')
+soap_sql = etree.SubElement(soap_b, soap_axns+'executeSQLQuery', nsmap=soap_sqlnsmap)
+sql_e = etree.SubElement(soap_sql, 'sql')
 
 # HTTP headers requried by SOAP API
 header = {
           'Content-type' : 'text/xml',
-          'SOAPAction' : 'CUCM:DB ver=7.0',
+          'SOAPAction' : 'CUCM:DB ver=8.5',
          }
 
 def run_sql(cmserver,username,password,sql,cmport='8443'):
     """ run arbitrary SQL command via CUCM XML API, return XML result"""
 
     url = 'https://%s:%s/axl/' % (cmserver,cmport)
-    body = '<%s %s %s %s %s>' % (body1,body2,body3,body4,body5)
-
-    body += '<sql>%s</sql>' % sql + body_axl_end + body_end + env_end + '\r\n\r\n'
-    msg = env_start + body_start + body
+    sql_e.text = sql
+    msg = etree.tostring(soap_env, pretty_print=True)
     
     r = requests.post(url,headers=header,data=msg,verify=False,auth=(username,password))
 
@@ -63,15 +61,11 @@ def get_description_by_name(cmserver,username,password,device,cmport='8443'):
 
     url = 'https://%s:%s/axl/' % (cmserver,cmport)
 
-    body = '<%s %s %s %s %s>' % (body1,body2,body3,body4,body5)
 
     sql = "<sql>select description from device where name = '%s'</sql>" % device.upper()
-
-    body += sql
-    body += body_axl_end
-
-    msg = env_start + body_start + body + body_end + env_end + '\r\n\r\n'
-
+    sql_e = sql
+    msg = etree.tostring(soap_env, pretty_print=True)
+    
     # change verify=TRUE if you want to check the CUCM SSL certificate
     r = requests.post(url,headers=header,data=msg,verify=False,auth=(username,password))
 
@@ -104,7 +98,7 @@ def get_descriptions_from_list(cmserver,cmuser,cmpass,device_list):
     return phone_descriptions
 
 def main():
-
+    global soap_env, sql_e
     """ If called as the main script, accept options and print results """
     import pprint
     from optparse import OptionParser
