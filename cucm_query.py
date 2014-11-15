@@ -70,10 +70,6 @@ def get_description_by_name(cmserver,username,password,device,cmport='8443'):
     # change verify=TRUE if you want to check the CUCM SSL certificate
     r = requests.post(url,headers=header,data=msg,verify=False,auth=(username,password))
 
-    #print '*'*60
-    #print msg
-    #print '*'*60
-    #print header
     if r.status_code == requests.codes.ok:
         # couldn't figure out how to parse SOAP response w/o regex...
         try:
@@ -81,11 +77,11 @@ def get_description_by_name(cmserver,username,password,device,cmport='8443'):
             return m.group(1)
         except:
             return 'unknown'
-            print "regex match of description failed: "
-            print 'device %s' % device
-            print 
-            print msg
-            print r.text
+            #print "regex match of description failed: "
+            #print 'device %s' % device
+            #print 
+            #print msg
+            #print r.text
             sys.exit()
     else:
         print 'got bad status code:'
